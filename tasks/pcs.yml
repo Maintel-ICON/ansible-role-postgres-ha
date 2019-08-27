@@ -18,28 +18,24 @@
     - pacemaker
     - libselinux-python
 
-- name: "Build hosts file"
-  lineinfile:
-    dest: /etc/hosts
-    regexp: '.*{{ item }}$'
-    line: "{{ hostvars[item].ansible_default_ipv4.address }} {{ item }}"
-    state: present
-  when: hostvars[item].ansible_default_ipv4.address is defined
-  with_items: "{{ ansible_play_batch }}"
+# - name: "Build hosts file"
+#   lineinfile: 
+#     dest: /etc/hosts
+#     regexp: '.*{{ item }}$'
+#     line: "{{ hostvars[item].ansible_default_ipv4.address }} {{ item }}"
+#     state: present
+#   when: hostvars[item].ansible_default_ipv4.address is defined
+#   with_items: "{{ ansible_play_batch }}"
 
-# For each host add hostnames for all postgres_ha_network_rings interfaces to /etc/hosts
-# example output: "10.10.90.200 myhost-ring1"
-- name: add additional network rings to hosts file
-  lineinfile:
-    dest: /etc/hosts
-    regexp: '.*{{ item[0] }}-{{ item[1] }}$'
-    line: "{{ hostvars[item[0]][['ansible_', postgres_ha_network_rings[item[1]]]|join]['ipv4']['address'] }} {{ item[0] }}-{{ item[1] }}"
-    state: present
-  with_nested:
-    - "{{ ansible_play_batch }}"
-    - "{{ postgres_ha_network_rings }}"
-  when: postgres_ha_network_rings and
-        hostvars[item[0]][['ansible_', postgres_ha_network_rings[item[1]]]|join] is defined
+# # For each host add hostnames for all postgres_ha_network_rings interfaces to /etc/hosts
+# # example output: "10.10.90.200 myhost-ring1"
+# - name: add additional network rings to hosts file
+#   lineinfile: dest=/etc/hosts regexp='.*{{ item[0] }}-{{ item[1] }}$' line="{{ hostvars[item[0]][['ansible_', postgres_ha_network_rings[item[1]]]|join]['ipv4']['address'] }} {{ item[0] }}-{{ item[1] }}" state=present
+#   with_nested:
+#     - "{{ ansible_play_batch }}"
+#     - "{{ postgres_ha_network_rings }}"
+#   when: postgres_ha_network_rings and
+#         hostvars[item[0]][['ansible_', postgres_ha_network_rings[item[1]]]|join] is defined
 
 # create hostname string for "pcs cluster" command that lists also all ring hostnames (if exist)
 # example: "node01,node01-ring1"
@@ -97,6 +93,7 @@
         inventory_hostname == postgres_ha_cluster_master_host    # run only on master node
 
 - name: join cluster nodes (centos7)
+  # run_once: yes
   shell: /bin/sh -c "if ! grep -q 'ring0_addr[:] *{{ item }}[\t ]*$' /etc/corosync/corosync.conf; then pcs cluster node add {{ hostvars[item]['pcs_hostname'] }}; fi"
   with_items: '{{ ansible_play_batch | difference([inventory_hostname]) }}'   # all hosts except me
   when: os_version == 'centos7' and

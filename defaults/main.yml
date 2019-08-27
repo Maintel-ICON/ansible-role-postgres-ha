@@ -46,7 +46,7 @@ postgres_ha_paf_geo_patch: False                           # Apply a patch to PA
                                                                 # See diff here: https://github.com/YanChii/PAF/compare/master...YanChii:master-geo-ha?expand=1
 
 postgres_ha_network_rings:                                 # Use multiple networks for cluster interconnection. Defaults to primary NIC.
-#    ring0: "eth0"                                         # Primary network. The "lowest" string (ASCII compare) will be selected as the primary network ring.
+#    ring0: "enp0s8"                                         # Primary network. The "lowest" string (ASCII compare) will be selected as the primary network ring.
 #    ring1: "eth1"                                         # Additional network. You can use any names instead of "ring*". These will be appended to a hostname.
 
 postgres_ha_mcast_enable: False                            # Enable cluster communication using multicast (sets transport=udp, rrpmode=passive). \

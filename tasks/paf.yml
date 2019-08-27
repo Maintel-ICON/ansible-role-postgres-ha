@@ -16,7 +16,7 @@
 # that's why it's embedded in the role
 
 - name: copy PAF rpm to hosts
-  copy: 
+  copy:
     src: "{{ paf_pkg }}"
     dest: "/tmp/{{ paf_pkg }}"
 
