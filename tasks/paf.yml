@@ -16,7 +16,9 @@
 # that's why it's embedded in the role
 
 - name: copy PAF rpm to hosts
-  copy: src="{{ paf_pkg }}" dest="/tmp/{{ paf_pkg }}"
+  copy: 
+    src: "{{ paf_pkg }}"
+    dest: "/tmp/{{ paf_pkg }}"
 
 - name: install PAF DB failover agent
   yum:
@@ -45,18 +47,26 @@
   when: postgres_ha_paf_geo_patch
 
 - name: prepare DB recovery config
-  template: src=recovery.conf.pcmk.j2 dest="{{ postgres_ha_pg_data }}/../recovery.conf.{{postgres_ha_cluster_name}}.pcmk"
+  template:
+    src: recovery.conf.pcmk.j2
+    dest: "{{ postgres_ha_pg_data }}/../recovery.conf.{{postgres_ha_cluster_name}}.pcmk"
   args:
     owner: postgres
     group: postgres
     mode:  0644
 
 - name: stop database for clustering
-  service: name="{{ postgres_ha_pg_systemd_svcname }}" state=stopped enabled=false
+  service:
+    name: "{{ postgres_ha_pg_systemd_svcname }}"
+    state: stopped
+    enabled: false
 
 - name: create database cluster resource
   when: inventory_hostname == postgres_ha_cluster_master_host    # run only on one node
-  pcs_resource: command=create resource_id="{{ postgres_ha_cluster_pg_res_name }}" type=ocf:heartbeat:pgsqlms
+  pcs_resource:
+    command: create
+    resource_id: "{{ postgres_ha_cluster_pg_res_name }}"
+    type: ocf:heartbeat:pgsqlms
   args:
     disabled: True
     options:
@@ -93,7 +103,11 @@
 
 - name: create master DB resource
   when: inventory_hostname == postgres_ha_cluster_master_host    # run only on one node
-  pcs_resource: command=master resource_id="{{ postgres_ha_cluster_pg_HA_res_name }}" ms_name="{{ postgres_ha_cluster_pg_res_name }}" disabled=True
+  pcs_resource:
+    command: master
+    resource_id: "{{ postgres_ha_cluster_pg_HA_res_name }}"
+    ms_name: "{{ postgres_ha_cluster_pg_res_name }}"
+    disabled: True
   args:
     options:
       master-max      : 1
@@ -101,4 +115,3 @@
       clone-max       : "{{ ansible_play_batch|length }}"
       clone-node-max  : 1
       notify          : true
-

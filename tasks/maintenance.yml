@@ -18,7 +18,9 @@
   with_items: "{{ ansible_play_batch }}"
 
 - name: generate cluster maintenance scripts
-  template: src="{{ item }}" dest="{{ postgres_ha_maint_scripts_path }}/{{ item | basename | regex_replace('\.j2$', '') }}"
+  template: 
+    src: "{{ item }}"
+    dest: "{{ postgres_ha_maint_scripts_path }}/{{ item | basename | regex_replace('\\.j2$', '') }}"
   args:
     owner: postgres
     group: postgres

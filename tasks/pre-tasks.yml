@@ -1,5 +1,6 @@
 ---
-- debug: msg='MASTER NODE SET TO {{ postgres_ha_cluster_master_host }}'
+- debug: 
+    msg: 'MASTER NODE SET TO {{ postgres_ha_cluster_master_host }}'
   run_once: true
 
 - name: verify postgres_ha_cluster_master_host
@@ -19,7 +20,8 @@
     os_version: 'centos{{ ansible_distribution_major_version }}'
   when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
 
-- debug: msg='The OS version is set to {{ os_version }}'
+- debug: 
+    msg: 'The OS version is set to {{ os_version }}'
   run_once: true
 
 - name: verify PG cluster monitor intervals

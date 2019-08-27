@@ -1,6 +1,7 @@
 # vim: set filetype=yaml expandtab tabstop=2 shiftwidth=2 softtabstop=2 background=dark :
 
-- debug: msg='cluster_members={{ansible_play_batch}}'
+- debug:
+    msg: "cluster_members={{ansible_play_batch}}"
   run_once: true
 
 - name: install cluster pkgs
@@ -18,14 +19,22 @@
     - libselinux-python
 
 - name: "Build hosts file"
-  lineinfile: dest=/etc/hosts regexp='.*{{ item }}$' line="{{ hostvars[item].ansible_default_ipv4.address }} {{ item }}" state=present
+  lineinfile:
+    dest: /etc/hosts
+    regexp: '.*{{ item }}$'
+    line: "{{ hostvars[item].ansible_default_ipv4.address }} {{ item }}"
+    state: present
   when: hostvars[item].ansible_default_ipv4.address is defined
   with_items: "{{ ansible_play_batch }}"
 
 # For each host add hostnames for all postgres_ha_network_rings interfaces to /etc/hosts
 # example output: "10.10.90.200 myhost-ring1"
 - name: add additional network rings to hosts file
-  lineinfile: dest=/etc/hosts regexp='.*{{ item[0] }}-{{ item[1] }}$' line="{{ hostvars[item[0]][['ansible_', postgres_ha_network_rings[item[1]]]|join]['ipv4']['address'] }} {{ item[0] }}-{{ item[1] }}" state=present
+  lineinfile:
+    dest: /etc/hosts
+    regexp: '.*{{ item[0] }}-{{ item[1] }}$'
+    line: "{{ hostvars[item[0]][['ansible_', postgres_ha_network_rings[item[1]]]|join]['ipv4']['address'] }} {{ item[0] }}-{{ item[1] }}"
+    state: present
   with_nested:
     - "{{ ansible_play_batch }}"
     - "{{ postgres_ha_network_rings }}"
@@ -46,10 +55,17 @@
   when: postgres_ha_mcast_enable
 
 - name: enable GUI if required
-  lineinfile: dest=/etc/sysconfig/pcsd regexp='^PCSD_DISABLE_GUI=' line="PCSD_DISABLE_GUI={% if postgres_ha_gui_enable %}false{% else %}true{% endif %}" state=present
+  lineinfile:
+    dest: /etc/sysconfig/pcsd
+    regexp: '^PCSD_DISABLE_GUI='
+    line: "PCSD_DISABLE_GUI={% if postgres_ha_gui_enable %}false{% else %}true{% endif %}"
+    state: present
 
 - name: service pcsd start                         
-  service: name=pcsd state=started enabled=yes
+  service:
+    name: pcsd
+    state: started
+    enabled: yes
 
 - name: setup hacluster password
   user:
@@ -107,15 +123,21 @@
 #  #failed_when: True
 
 - name: alter stonith settings
-  pcs_property: name=stonith-enabled value=false
+  pcs_property:
+    name: stonith-enabled
+    value: false
   run_once: true
 
 - name: alter cluster policy settings
-  pcs_property: name=symmetric-cluster value=false
+  pcs_property:
+    name: symmetric-cluster
+    value: false
   run_once: true
 
 - name: alter cluster transition settings
-  pcs_property: name=crmd-transition-delay value=3s
+  pcs_property:
+    name: crmd-transition-delay
+    value: 3s
   run_once: true
 
 - name: verify cluster configuration
