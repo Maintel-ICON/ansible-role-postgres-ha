@@ -1,0 +1,39 @@
+---
+- debug: msg='MASTER NODE SET TO {{ postgres_ha_cluster_master_host }}'
+  run_once: true
+
+- name: verify postgres_ha_cluster_master_host
+  fail:
+    msg: "CRITICAL: defined master host ({{ postgres_ha_cluster_master_host }}) is not in host list ({{ ansible_play_batch }})"
+  when: postgres_ha_cluster_master_host not in ansible_play_batch
+
+# Set default os_version.
+# Without os_version set, the role will fail.
+# This is a preparation for multi-OS.
+- name: identify the OS (default)
+  set_fact:
+    os_version: 'centos7'
+
+- name: identify the OS (centos)
+  set_fact:
+    os_version: 'centos{{ ansible_distribution_major_version }}'
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- debug: msg='The OS version is set to {{ os_version }}'
+  run_once: true
+
+- name: verify PG cluster monitor intervals
+  fail:
+    msg: 'Paremeters "postgres_ha_monitor_interval_pgmaster" and "postgres_ha_monitor_interval_pgslave" cannot have the same value!'
+  when: postgres_ha_monitor_interval_pgmaster == postgres_ha_monitor_interval_pgslave
+
+- name: verify specific RRP setting for Centos 6
+  fail:
+    msg: 'Centos 6 requires at least 2 ring interfaces for RRP. Add one more or remove the current interface in postgres_ha_network_rings config parameter.'
+  when: os_version == 'centos6' and postgres_ha_mcast_enable and postgres_ha_network_rings and (postgres_ha_network_rings|length == 1)
+
+# not necessary, cluster automatically selects the default interface
+#- name: set default network ring
+#  set_fact:
+#    network_rings: '{% if postgres_ha_network_rings %}{{ postgres_ha_network_rings }}{% else %}{{ { "ring0": ansible_default_ipv4.alias } }}{% endif %}'
+

@@ -1,0 +1,20 @@
+# TYPE  DATABASE        USER            ADDRESS                 METHOD
+
+# Default:
+#####!!!!!######local  all  postgres    ident map=superuser
+local  all  all  peer
+# "local" is for Unix domain socket connections only
+host  all  all  127.0.0.1/32  ident
+host  netbox  netbox  192.168.56.103/32  trust
+host  netbox  netbox  192.168.56.104/32  trust
+# replication ACLs
+{% for node in ansible_play_batch %}
+#host  replication  {{ postgres_ha_pg_repl_user }}  {{ hostvars[node].ansible_default_ipv4.address }}/32  md5
+host  replication  {{ postgres_ha_pg_repl_user }}  {{ ansible_host }}/32  {% if item == inventory_hostname %}reject{% else %}md5{% endif %}
+#host  postgres     {{ postgres_ha_pg_repl_user }}  {{ hostvars[node].ansible_default_ipv4.address }}/32  md5
+host  postgres     {{ postgres_ha_pg_repl_user }}  {{ ansible_host }}/32  md5
+{% endfor %}
+# IPv4 local connections
+host  all  all  127.0.0.1/32  md5
+# IPv6 local connections
+host  all  all  ::1/128  md5
