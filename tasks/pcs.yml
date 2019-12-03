@@ -5,11 +5,13 @@
   run_once: true
 
 - name: install cluster pkgs
+  become: yes
   yum:
     name: pcs
     state: present
 
 - name: install additional cluster pkgs for centos 6
+  become: yes
   yum:
     name: '{{ item }}'
     state: present
@@ -51,19 +53,22 @@
   when: postgres_ha_mcast_enable
 
 - name: enable GUI if required
+  become: yes
   lineinfile:
     dest: /etc/sysconfig/pcsd
     regexp: '^PCSD_DISABLE_GUI='
     line: "PCSD_DISABLE_GUI={% if postgres_ha_gui_enable %}false{% else %}true{% endif %}"
     state: present
 
-- name: service pcsd start                         
+- name: service pcsd start
+  become: yes
   service:
     name: pcsd
     state: started
     enabled: yes
 
 - name: setup hacluster password
+  become: yes
   user:
     name: hacluster
     state: present
@@ -71,6 +76,7 @@
     password: "{{ postgres_ha_cluster_ha_password_hash }}"
 
 - name: setup cluster auth
+  become: yes
   shell: pcs cluster auth {{ ansible_play_batch | join( " ") }} -u hacluster -p "{{ postgres_ha_cluster_ha_password }}"
 
 # We create cluster in two steps:
@@ -78,6 +84,7 @@
 # 2. join other cluster nodes (the task below)
 # The reason is that we want to support adding new nodes by re-running the role.
 - name: create cluster (centos7)
+  become: yes
   shell: pcs cluster setup --name {{ postgres_ha_cluster_name }} "{{ pcs_hostname }}" {% if postgres_ha_pcs_advanced_params %}{% for param in postgres_ha_pcs_advanced_params|difference(['addr0', 'addr1', 'addr2', 'addr3', 'transport']) %}--{{ param }} {{ postgres_ha_pcs_advanced_params[param] }} {% endfor %}{% endif %} {% if postgres_ha_mcast_enable %}--transport udp {{ pcs_ring_addrs }}{% endif %}
   args:
     creates: /etc/corosync/corosync.conf
@@ -94,6 +101,7 @@
 
 - name: join cluster nodes (centos7)
   # run_once: yes
+  become: yes
   shell: /bin/sh -c "if ! grep -q 'ring0_addr[:] *{{ item }}[\t ]*$' /etc/corosync/corosync.conf; then pcs cluster node add {{ hostvars[item]['pcs_hostname'] }}; fi"
   with_items: '{{ ansible_play_batch | difference([inventory_hostname]) }}'   # all hosts except me
   when: os_version == 'centos7' and
@@ -107,6 +115,7 @@
 
 # start cluster on every node separately (can be run multiple times without failure)
 - name: start cluster
+  become: yes
   shell: pcs cluster start
   #args:
   # creates: /var/lib/pacemaker/cib/cib.xml
@@ -120,28 +129,33 @@
 #  #failed_when: True
 
 - name: alter stonith settings
+  become: yes
   pcs_property:
     name: stonith-enabled
     value: false
   run_once: true
 
-- name: alter cluster policy settings
+- name: alter cluster policy settings4
+  become: yes
   pcs_property:
     name: symmetric-cluster
     value: false
   run_once: true
 
 - name: alter cluster transition settings
+  become: yes
   pcs_property:
     name: crmd-transition-delay
     value: 3s
   run_once: true
 
 - name: verify cluster configuration
+  become: yes
   shell: crm_verify -L -V
   run_once: true
 
 - name: enable cluster autostart
+  become: yes
   shell: pcs cluster enable
 
 # reload corosync if neccessary (done automatically on the end of the tasklist)
