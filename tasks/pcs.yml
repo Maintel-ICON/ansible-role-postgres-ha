@@ -84,7 +84,7 @@
   shell: "pcs cluster auth {{ pcs_cluster_hosts }} -u hacluster -p {{ postgres_ha_cluster_ha_password }}"
   loop: "{{ ansible_play_batch }}"
   vars: 
-    pcs_cluster_hosts: "{{ pcs_cluster_hosts | default() + { hostvars[item]['linux_host_name']  } }}"
+    pcs_cluster_hosts: "{{ pcs_cluster_hosts | default() + [ { 'hostname': hostvars[item]['linux_host_name']  } ] }}"
 # We create cluster in two steps:
 # 1. create one-node cluster
 # 2. join other cluster nodes (the task below)
