@@ -131,25 +131,21 @@
 #  #register: cluster_state
 #  #failed_when: True
 
+# pcs_property modules have to be writen on one line rather than yaml
+# as this is what the module library expects
 - name: alter stonith settings
   become: yes
-  pcs_property:
-    name: stonith-enabled
-    value: false
+  pcs_property: name=stonith-enabled value=false
   run_once: true
 
 - name: alter cluster policy settings4
   become: yes
-  pcs_property:
-    name: symmetric-cluster
-    value: false
+  pcs_property: name=symmetric-cluster value=false
   run_once: true
 
 - name: alter cluster transition settings
   become: yes
-  pcs_property:
-    name: crmd-transition-delay
-    value: 3s
+  pcs_property: name=crmd-transition-delay value=3s
   run_once: true
 
 - name: verify cluster configuration
