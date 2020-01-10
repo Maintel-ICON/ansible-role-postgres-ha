@@ -75,10 +75,11 @@
     update_password: always
     password: "{{ postgres_ha_cluster_ha_password_hash }}"
 
+# need to work out filter to capture only postgresql servers
 - name: setup cluster auth
   become: yes
-  shell: pcs cluster auth {{ ansible_play_batch | join( " ") }} -u hacluster -p "{{ postgres_ha_cluster_ha_password }}"
-
+  # shell: pcs cluster auth {{ ansible_play_batch[inve ntory] | join( " ") }} -u hacluster -p "{{ postgres_ha_cluster_ha_password }}
+  shell: pcs cluster auth {{ hostvars[inventory_hostname].linux_host_name | join( " ") }} -u hacluster -p "{{ postgres_ha_cluster_ha_password }}
 # We create cluster in two steps:
 # 1. create one-node cluster
 # 2. join other cluster nodes (the task below)
