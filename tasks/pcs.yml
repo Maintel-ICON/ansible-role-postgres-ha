@@ -16,18 +16,18 @@
     name: '{{ item }}'
     state: present
   when: os_version == 'centos6'
-  with_items:
+  loop:
     - pacemaker
     - libselinux-python
 
-# - name: "Build hosts file"
-#   lineinfile: 
-#     dest: /etc/hosts
-#     regexp: '.*{{ item }}$'
-#     line: "{{ hostvars[item].ansible_default_ipv4.address }} {{ item }}"
-#     state: present
-#   when: hostvars[item].ansible_default_ipv4.address is defined
-#   with_items: "{{ ansible_play_batch }}"
+- name: "Build hosts file"
+  lineinfile: 
+    dest: /etc/hosts
+    regexp: '.*{{ item }}$'
+    line: "{{ hostvars[item].ansible_default_ipv4.address }} {{ item }}"
+    state: present
+  when: hostvars[item].ansible_default_ipv4.address is defined
+  loop: "{{ ansible_play_batch }}"
 
 # # For each host add hostnames for all postgres_ha_network_rings interfaces to /etc/hosts
 # # example output: "10.10.90.200 myhost-ring1"
@@ -79,7 +79,8 @@
 - name: setup cluster auth
   become: yes
   # shell: pcs cluster auth {{ ansible_play_batch[inve ntory] | join( " ") }} -u hacluster -p "{{ postgres_ha_cluster_ha_password }}
-  shell: "pcs cluster auth {{ hostvars[ansible_play_batch]['linux_host_name'] | join( ' ') }} -u hacluster -p {{ postgres_ha_cluster_ha_password }}"
+  shell: "pcs cluster auth {{ hostvars[item]['linux_host_name'] | join( ' ') }} -u hacluster -p {{ postgres_ha_cluster_ha_password }}"
+  loop: "{{ ansible_play_batch }}"
 # We create cluster in two steps:
 # 1. create one-node cluster
 # 2. join other cluster nodes (the task below)
