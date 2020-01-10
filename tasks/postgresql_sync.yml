@@ -21,11 +21,11 @@
     pg_pkg_name: 'pgdg-redhat{{ postgres_ha_pg_version | replace(".", "") }}-{{ postgres_ha_pg_version }}-{{ pg_pkg_vers_suffix }}.noarch.rpm'
   when: ansible_distribution == 'Red Hat Enterprise Linux'
 
-# - name: 'import pg{{ postgres_ha_pg_version | replace(".", "") }} repo'
-#   yum:
-#     name: "{{ postgres_ha_repo_url }}"
-#     state: installed
-#   when: postgres_ha_import_repo
+- name: 'import pg{{ postgres_ha_pg_version | replace(".", "") }} repo'
+  yum:
+    name: "{{ postgres_ha_repo_url }}"
+    state: installed
+  when: postgres_ha_import_repo
 
 - name: 'install pg{{ postgres_ha_pg_version | replace(".", "") }}'
   yum:
