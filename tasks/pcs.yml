@@ -21,6 +21,7 @@
     - libselinux-python
 
 - name: "Build hosts file"
+  become: yes
   lineinfile: 
     dest: /etc/hosts
     regexp: '.*{{ item }}$'
