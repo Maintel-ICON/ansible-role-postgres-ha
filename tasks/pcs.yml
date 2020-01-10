@@ -137,23 +137,27 @@
   become: yes
   pcs_property: 
     name: stonith-enabled
-    value: false
-  run_once: true
+    value: "false"
+  run_once: yes
 
 - name: alter cluster policy settings4
   become: yes
-  pcs_property: name=symmetric-cluster value=false
-  run_once: true
+  pcs_property: 
+    name: symmetric-cluster
+    value: false
+  run_once: yes
 
 - name: alter cluster transition settings
   become: yes
-  pcs_property: name=crmd-transition-delay value=3s
-  run_once: true
+  pcs_property:
+    name: crmd-transition-delay
+    value: 3s
+  run_once: yes
 
 - name: verify cluster configuration
   become: yes
   shell: crm_verify -L -V
-  run_once: true
+  run_once: yes
 
 - name: enable cluster autostart
   become: yes
