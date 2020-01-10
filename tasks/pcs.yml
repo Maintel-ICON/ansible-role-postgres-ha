@@ -135,7 +135,9 @@
 # as this is what the module library expects
 - name: alter stonith settings
   become: yes
-  pcs_property: name=stonith-enabled value=false
+  pcs_property: 
+    name: stonith-enabled
+    value: false
   run_once: true
 
 - name: alter cluster policy settings4
