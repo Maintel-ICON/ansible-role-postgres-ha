@@ -230,6 +230,11 @@
         (db_resource_exists is succeeded) and
         (db_running is failed)
 
+- name: Install psycopg2 for ansible to be able to create postgresql users
+  pip:
+    name: psycopg2-binary
+  become: yes
+
 - name: setup DB replication auth
   postgresql_user:
     name: "{{ postgres_ha_pg_repl_user }}"
