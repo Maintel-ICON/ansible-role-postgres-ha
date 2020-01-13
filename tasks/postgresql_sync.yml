@@ -230,6 +230,12 @@
         (db_resource_exists is succeeded) and
         (db_running is failed)
 
+- name: Install python pip
+  become: yes
+  yum:
+    name: python-pip
+    state: present
+
 - name: Install psycopg2 for ansible to be able to create postgresql users
   pip:
     name: psycopg2-binary
