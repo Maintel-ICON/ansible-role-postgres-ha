@@ -283,6 +283,13 @@
   when: not db_sync_file.stat.exists
   register: delete_datadir
 
+- name: copy pg_hba.conf template to system
+  become: yes
+  template:
+    src: pg_hba.conf.j2
+    dest: "{{ postgres_ha_pg_data }}/pg_hba.conf"
+  notify: reload postgresql
+
 # replicate slave node (assumes firewall is already setup)
 # run only on slave nodes and only when postgres datadir is empty
 - name: synchronize slave databases
@@ -295,13 +302,6 @@
   #when: (inventory_hostname != postgres_ha_cluster_master_host) and
   #      (datadir_files.matched|int == 0)
   register: slave_resync
-
-- name: copy pg_hba.conf template to system
-  become: yes
-  template:
-    src: pg_hba.conf.j2
-    dest: "{{ postgres_ha_pg_data }}/pg_hba.conf"
-  notify: reload postgresql
 
 # - name: forbid self-replication in pg_hba.conf on slaves
 #   lineinfile: 
