@@ -296,15 +296,22 @@
   #      (datadir_files.matched|int == 0)
   register: slave_resync
 
-- name: forbid self-replication in pg_hba.conf on slaves
-  lineinfile: 
+- name: copy pg_hba.conf template to system
+  become: yes
+  template:
+    src: pg_hba.conf.j2
     dest: "{{ postgres_ha_pg_data }}/pg_hba.conf"
-    regexp: '^host    replication .*{{ hostvars[item].ansible_host }}/32'
-    insertbefore: '^host'
-    line: 'host    replication     {{ postgres_ha_pg_repl_user }}    {{ hostvars[item].ansible_host }}/32          {% if item == inventory_hostname %}reject{% else %}md5{% endif %}'
-  with_items: "{{ ansible_play_batch }}"
-  # run only on freshly synchronized slave
-  when: inventory_hostname != postgres_ha_cluster_master_host and slave_resync.changed
+  notify: reload postgresql
+
+# - name: forbid self-replication in pg_hba.conf on slaves
+#   lineinfile: 
+#     dest: "{{ postgres_ha_pg_data }}/pg_hba.conf"
+#     regexp: '^host    replication .*{{ hostvars[item].ansible_host }}/32'
+#     insertbefore: '^host'
+#     line: 'host    replication     {{ postgres_ha_pg_repl_user }}    {{ hostvars[item].ansible_host }}/32          {% if item == inventory_hostname %}reject{% else %}md5{% endif %}'
+#   with_items: "{{ ansible_play_batch }}"
+#   # run only on freshly synchronized slave
+#   when: inventory_hostname != postgres_ha_cluster_master_host and slave_resync.changed
 
 # Pause ansible execution to manually correct the postgres sync if necessary
 #- name: Exterminate mankind
