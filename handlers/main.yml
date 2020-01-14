@@ -3,7 +3,9 @@
 # handlers file for postgresql-ha
 
 - name: restart postgresql
-  service: name="{{ postgres_ha_pg_systemd_svcname }}" state=restarted
+  service: 
+    name: "{{ postgres_ha_pg_systemd_svcname }}"
+    state: restarted
 
 - name: reload postgresql
   shell: "{{ postgres_ha_pg_bindir }}/pg_ctl -D {{ postgres_ha_pg_data }} reload"
