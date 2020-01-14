@@ -5,12 +5,13 @@
 local  all  all  peer
 # "local" is for Unix domain socket connections only
 host  all  all  127.0.0.1/32  ident
-host  netbox  netbox  192.168.56.103/32  trust
-host  netbox  netbox  192.168.56.104/32  trust
+{% for netbox in groups[role_nginx_web_server] %}}
+host  netbox  netbox  {% ansible_host %}/32  trust
+{% endfor %}}
 # replication ACLs
 {% for node in ansible_play_batch %}
 #host  replication  {{ postgres_ha_pg_repl_user }}  {{ hostvars[node].ansible_default_ipv4.address }}/32  md5
-host  replication  {{ postgres_ha_pg_repl_user }}  {{ ansible_host }}/32  {% if item == inventory_hostname %}reject{% else %}md5{% endif %}
+host  replication  {{ postgres_ha_pg_repl_user }}  {{ ansible_host }}/32  {% if node == inventory_hostname %}reject{% else %}md5{% endif %}
 #host  postgres     {{ postgres_ha_pg_repl_user }}  {{ hostvars[node].ansible_default_ipv4.address }}/32  md5
 host  postgres     {{ postgres_ha_pg_repl_user }}  {{ ansible_host }}/32  md5
 {% endfor %}
