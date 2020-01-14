@@ -276,7 +276,7 @@
 - name: remove slave DB datadir before sync
   file: 
     state: absent
-    path: "{{ postgres_ha_pg_data }}"
+    path: "{{ postgres_ha_pg_data }}/.synchronized"
   #shell: rm -rf "{{ postgres_ha_pg_data }}" 
   #args:
   #  creates: "{{ postgres_ha_pg_data }}/.synchronized"     # will not delete if the file exists (means that DB is already synced)
