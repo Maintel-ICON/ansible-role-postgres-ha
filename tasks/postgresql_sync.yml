@@ -61,6 +61,11 @@
   when: inventory_hostname == postgres_ha_cluster_master_host
     and os_version == 'centos6'
 
+- name: create data directory
+  file:
+    path: "{{ postgres_ha_pg_data }}"
+    state: directory
+
 # if the file does not exist, DB sync is needed
 - name: check if DB was synchronized before
   stat:
